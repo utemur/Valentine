@@ -243,9 +243,16 @@
       // Run when layout is ready - after image loads (image affects layout)
       const valentineImage = document.getElementById('valentineImage');
       function getAssetUrl(filename) {
-        var href = window.location.href;
-        var base = href.endsWith('/') ? href : href.substring(0, href.lastIndexOf('/') + 1);
-        return base + filename;
+        var pathname = window.location.pathname;
+        var basePath;
+        if (pathname.endsWith('/')) {
+          basePath = pathname;
+        } else if (pathname.includes('.')) {
+          basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
+        } else {
+          basePath = pathname + '/';
+        }
+        return window.location.origin + basePath + filename;
       }
       const IMAGE_INITIAL = 'cupid-3620.png';
       const IMAGE_AFTER_YES = 'valentine-yes.jpg';
@@ -263,7 +270,7 @@
 
         buttonsWrapper.classList.add('yes-clicked');
         card.classList.add('yes-clicked');
-        valentineImage.src = getAssetUrl(IMAGE_AFTER_YES);
+        valentineImage.src = getAssetUrl(IMAGE_AFTER_YES) + '?v=' + Date.now();
         launchConfetti();
       });
 

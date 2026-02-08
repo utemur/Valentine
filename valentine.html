@@ -230,25 +230,24 @@
 
       // Set initial position for No button (next to Yes button, in bottom area)
       function initNoButtonPosition() {
-        const btnYesRect = btnYes.getBoundingClientRect();
-        const cardRect = card.getBoundingClientRect();
-        // Position to the right of Yes button
-        const left = btnYesRect.right - cardRect.left + 12;
-        const top = btnYesRect.top - cardRect.top;
-        btnNo.style.left = left + 'px';
-        btnNo.style.top = top + 'px';
-      }
-      // Run after layout is ready (use rAF to ensure layout is computed)
-      function scheduleInit() {
         requestAnimationFrame(function () {
-          initNoButtonPosition();
+          const btnYesRect = btnYes.getBoundingClientRect();
+          const cardRect = card.getBoundingClientRect();
+          // Position to the right of Yes button
+          const left = btnYesRect.right - cardRect.left + 12;
+          const top = btnYesRect.top - cardRect.top;
+          btnNo.style.left = left + 'px';
+          btnNo.style.top = top + 'px';
         });
       }
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', scheduleInit);
-      } else {
-        scheduleInit();
+      // Run when layout is ready - after image loads (image affects layout)
+      const valentineImage = document.getElementById('valentineImage');
+      if (valentineImage && valentineImage.complete) {
+        initNoButtonPosition();
+      } else if (valentineImage) {
+        valentineImage.addEventListener('load', initNoButtonPosition);
       }
+      window.addEventListener('load', initNoButtonPosition);
 
       // --- Yes button: confetti + success message ---
       btnYes.addEventListener('click', function () {

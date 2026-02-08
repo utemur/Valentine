@@ -139,18 +139,51 @@
       display: none;
     }
 
-    /* Success message */
+    /* Success message - replaces headline at top when Yes clicked */
     .success-message {
       display: none;
       text-align: center;
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       font-weight: 600;
       color: #c71585;
-      margin-top: 8px;
+      margin-bottom: 24px;
+      line-height: 1.3;
     }
 
-    .buttons-wrapper.yes-clicked .success-message {
+    @media (min-width: 480px) {
+      .success-message {
+        font-size: 1.75rem;
+        margin-bottom: 28px;
+      }
+    }
+
+    .card.yes-clicked .headline {
+      display: none;
+    }
+
+    .card.yes-clicked .success-message {
       display: block;
+    }
+
+    /* Footer watermark */
+    .card-footer {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(199, 21, 133, 0.2);
+      text-align: center;
+    }
+
+    .watermark {
+      font-size: 0.85rem;
+      color: #c71585;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .watermark-tagline {
+      font-size: 0.65rem;
+      color: #db7093;
+      opacity: 0.9;
     }
 
     /* Confetti canvas */
@@ -168,6 +201,7 @@
 <body>
   <div class="card">
     <h1 class="headline">Will you be my Valentine?</h1>
+    <p class="success-message" id="successMessage">I knew it 😄</p>
 
     <div class="image-area">
       <img
@@ -179,10 +213,14 @@
 
     <div class="buttons-wrapper" id="buttonsWrapper">
       <button type="button" class="btn btn-yes" id="btnYes">Yes</button>
-      <p class="success-message" id="successMessage">I knew it 😄</p>
     </div>
     <!-- No button is direct child of card so it can move anywhere within card bounds -->
     <button type="button" class="btn btn-no" id="btnNo">No</button>
+
+    <div class="card-footer">
+      <p class="watermark">Developed by Tim</p>
+      <p class="watermark-tagline">for those lucky ones who know how to truly love</p>
+    </div>
   </div>
 
   <canvas id="confettiCanvas"></canvas>

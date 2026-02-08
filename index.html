@@ -249,12 +249,16 @@
       }
       window.addEventListener('load', initNoButtonPosition);
 
-      // --- Yes button: confetti + success message ---
+      // --- Yes button: confetti + success message + swap image ---
+      const IMAGE_INITIAL = 'cupid-3620.png';
+      const IMAGE_AFTER_YES = 'valentine-yes.jpg';
+
       btnYes.addEventListener('click', function () {
         if (buttonsWrapper.classList.contains('yes-clicked')) return;
 
         buttonsWrapper.classList.add('yes-clicked');
         card.classList.add('yes-clicked');
+        valentineImage.src = IMAGE_AFTER_YES;
         launchConfetti();
       });
 
@@ -266,6 +270,7 @@
       function resetToInitialState() {
         buttonsWrapper.classList.remove('yes-clicked');
         card.classList.remove('yes-clicked');
+        valentineImage.src = IMAGE_INITIAL;
         if (animationId != null) {
           cancelAnimationFrame(animationId);
           animationId = null;

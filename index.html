@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Will you be my Valentine?</title>
+  <style>
+    /* Reset & base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Full-page pastel pink gradient */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 50%, #ffe4e1 100%);
+      padding: 16px;
+    }
+
+    /* Card container - position relative for absolute No button */
+    .card {
+      position: relative;
+      max-width: 560px;
+      width: 100%;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+      padding: 32px 24px;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    @media (min-width: 480px) {
+      .card {
+        padding: 40px 32px;
+      }
+    }
+
+    /* Headline */
+    .headline {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #c71585;
+      margin-bottom: 24px;
+      line-height: 1.3;
+    }
+
+    @media (min-width: 480px) {
+      .headline {
+        font-size: 1.75rem;
+        margin-bottom: 28px;
+      }
+    }
+
+    /* Image area */
+    .image-area {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 28px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    #valentineImage {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    /* Button container */
+    .buttons-wrapper {
+      position: relative;
+      min-height: 56px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .buttons-wrapper.yes-clicked {
+      min-height: auto;
+    }
+
+    /* Yes button */
+    .btn {
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-yes {
+      background: linear-gradient(135deg, #ff6b9d, #c71585);
+      color: white;
+    }
+
+    /* No button - absolute within card, runs away on hover/touch */
+    .btn-no {
+      position: absolute;
+      /* Initial position set via JS for flexibility */
+      background: #e0e0e0;
+      color: #666;
+      transition: left 0.35s ease, top 0.35s ease;
+    }
+
+    .card.yes-clicked .btn-no {
+      display: none;
+    }
+
+    .btn-no:hover {
+      background: #d0d0d0;
+    }
+
+    /* Hide buttons when Yes is clicked */
+    .buttons-wrapper.yes-clicked .btn {
+      display: none;
+    }
+
+    /* Success message */
+    .success-message {
+      display: none;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #c71585;
+      margin-top: 8px;
+    }
+
+    .buttons-wrapper.yes-clicked .success-message {
+      display: block;
+    }
+
+    /* Confetti canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 class="headline">Will you be my Valentine?</h1>
+
+    <div class="image-area">
+      <img
+        id="valentineImage"
+        src="cupid-3620.png"
+        alt="Valentine image"
+      >
+    </div>
+
+    <div class="buttons-wrapper" id="buttonsWrapper">
+      <button type="button" class="btn btn-yes" id="btnYes">Yes</button>
+      <p class="success-message" id="successMessage">I knew it 😄</p>
+    </div>
+    <!-- No button is direct child of card so it can move anywhere within card bounds -->
+    <button type="button" class="btn btn-no" id="btnNo">No</button>
+  </div>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // --- DOM elements ---
+      const card = document.querySelector('.card');
+      const btnYes = document.getElementById('btnYes');
+      const btnNo = document.getElementById('btnNo');
+      const buttonsWrapper = document.getElementById('buttonsWrapper');
+
+      // --- No button "run away" logic ---
+      const BUTTON_PADDING = 16;
+
+      function moveNoButton() {
+        const cardWidth = card.offsetWidth;
+        const cardHeight = card.offsetHeight;
+        const btnWidth = btnNo.offsetWidth;
+        const btnHeight = btnNo.offsetHeight;
+
+        // Random position within card bounds (with padding from edges)
+        const minX = BUTTON_PADDING;
+        const minY = BUTTON_PADDING;
+        const maxX = Math.max(minX, cardWidth - btnWidth - BUTTON_PADDING);
+        const maxY = Math.max(minY, cardHeight - btnHeight - BUTTON_PADDING);
+
+        const newX = minX + Math.random() * Math.max(0, maxX - minX);
+        const newY = minY + Math.random() * Math.max(0, maxY - minY);
+
+        btnNo.style.left = newX + 'px';
+        btnNo.style.top = newY + 'px';
+      }
+
+      // Event: mouseenter (desktop)
+      btnNo.addEventListener('mouseenter', moveNoButton);
+
+      // Event: touchstart (mobile) - run away when user tries to tap
+      btnNo.addEventListener('touchstart', function (e) {
+        e.preventDefault();
+        moveNoButton();
+      }, { passive: false });
+
+      // Set initial position for No button (next to Yes button, in bottom area)
+      function initNoButtonPosition() {
+        requestAnimationFrame(function () {
+          const btnYesRect = btnYes.getBoundingClientRect();
+          const cardRect = card.getBoundingClientRect();
+          // Position to the right of Yes button
+          const left = btnYesRect.right - cardRect.left + 12;
+          const top = btnYesRect.top - cardRect.top;
+          btnNo.style.left = left + 'px';
+          btnNo.style.top = top + 'px';
+        });
+      }
+      // Run when layout is ready - after image loads (image affects layout)
+      const valentineImage = document.getElementById('valentineImage');
+      if (valentineImage && valentineImage.complete) {
+        initNoButtonPosition();
+      } else if (valentineImage) {
+        valentineImage.addEventListener('load', initNoButtonPosition);
+      }
+      window.addEventListener('load', initNoButtonPosition);
+
+      // --- Yes button: confetti + success message ---
+      btnYes.addEventListener('click', function () {
+        if (buttonsWrapper.classList.contains('yes-clicked')) return;
+
+        buttonsWrapper.classList.add('yes-clicked');
+        card.classList.add('yes-clicked');
+        launchConfetti();
+      });
+
+      // --- Confetti animation (pure JS + canvas) ---
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // Reset to initial state (e.g. when page restored from bfcache or refreshed)
+      function resetToInitialState() {
+        buttonsWrapper.classList.remove('yes-clicked');
+        card.classList.remove('yes-clicked');
+        if (animationId != null) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        particles = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        initNoButtonPosition();
+      }
+
+      // Reset when page restored from cache (e.g. Back button)
+      window.addEventListener('pageshow', function (event) {
+        if (event.persisted) resetToInitialState();
+      });
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      const COLORS = ['#ff6b9d', '#c71585', '#ffb6c1', '#ffc0cb', '#ffe4e1', '#ff69b4', '#db7093'];
+
+      function createConfettiPiece() {
+        return {
+          x: Math.random() * canvas.width,
+          y: -Math.random() * 100,
+          vx: (Math.random() - 0.5) * 6,
+          vy: Math.random() * 4 + 2,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          size: Math.random() * 8 + 4,
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 20,
+        };
+      }
+
+      let particles = [];
+      let animationId = null;
+
+      function launchConfetti() {
+        for (let i = 0; i < 80; i++) {
+          particles.push(createConfettiPiece());
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          particles = particles.filter(function (p) {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.4; // gravity
+            p.rotation += p.rotationSpeed;
+
+            if (p.y > canvas.height + 20) return false;
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            ctx.restore();
+
+            return true;
+          });
+
+          if (particles.length > 0) {
+            animationId = requestAnimationFrame(animate);
+          } else {
+            cancelAnimationFrame(animationId);
+          }
+        }
+
+        animate();
+      }
+    })();
+  </script>
+</body>
+</html>
